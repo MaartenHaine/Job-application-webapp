@@ -17,6 +17,7 @@ import {
   Lightbulb,
   Sparkles,
   HelpCircle,
+  BadgeDollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { JOB_STATUSES, LOCATION_TYPES, JOB_TYPES } from "@/lib/types";
@@ -38,6 +39,7 @@ type App = {
   interviewNotes: string | null;
   vibeCheck: string | null;
   companyResearch: string | null;
+  salaryResearch: string | null;
 };
 
 type ExpectedQuestion = { question: string; tip: string };
@@ -47,6 +49,14 @@ type ResearchData = {
   insights: string[];
   talkingPoints: string[];
   expectedQuestions: ExpectedQuestion[];
+};
+
+type SalaryResearch = {
+  estimate: string;
+  basis: string;
+  breakdown: string[];
+  scaleReference: string | null;
+  notes: string | null;
 };
 
 function parseJsonArray(val: string | null): string[] {
@@ -195,6 +205,11 @@ export default function ApplicationDetail({ app }: { app: App }) {
   const [researching, setResearching] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [focus, setFocus] = useState("");
+  const [salaryLoading, setSalaryLoading] = useState(false);
+  const [salaryData, setSalaryData] = useState<SalaryResearch | null>(() => {
+    if (!app.salaryResearch) return null;
+    try { return JSON.parse(app.salaryResearch); } catch { return null; }
+  });
   const [research, setResearch] = useState<ResearchData | null>(() => {
     if (!app.companyResearch) return null;
     try { return JSON.parse(app.companyResearch); } catch { return null; }
@@ -219,6 +234,16 @@ export default function ApplicationDetail({ app }: { app: App }) {
 
   function set(field: string, value: string | string[]) {
     setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  async function handleSalaryResearch() {
+    setSalaryLoading(true);
+    try {
+      const res = await fetch(`/api/applications/${app.id}/salary`, { method: "POST" });
+      if (res.ok) setSalaryData(await res.json());
+    } finally {
+      setSalaryLoading(false);
+    }
   }
 
   async function handleResearch() {
@@ -416,6 +441,86 @@ export default function ApplicationDetail({ app }: { app: App }) {
             <p className="text-sm text-zinc-200 whitespace-pre-wrap">{form.vibeCheck || <span className="text-zinc-600 italic">No vibe check yet.</span>}</p>
           )}
         </Field>
+      </section>
+
+      {/* Salary Research */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Salary Research</h2>
+            {!form.salaryRange && (
+              <span className="text-xs bg-yellow-900/40 text-yellow-300 px-2 py-0.5 rounded-full">No salary listed</span>
+            )}
+          </div>
+          <button
+            onClick={handleSalaryResearch}
+            disabled={salaryLoading}
+            className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 disabled:opacity-50 transition-colors"
+          >
+            {salaryLoading ? (
+              <><Loader2 size={13} className="animate-spin" /> Researching…</>
+            ) : salaryData ? (
+              <><RefreshCw size={13} /> Refresh</>
+            ) : (
+              <><BadgeDollarSign size={13} /> Research Salary</>
+            )}
+          </button>
+        </div>
+
+        {!salaryData && !salaryLoading && (
+          <div className="border border-dashed border-zinc-800 rounded-lg p-5 text-center space-y-1.5">
+            <BadgeDollarSign size={20} className="text-zinc-600 mx-auto" />
+            <p className="text-sm text-zinc-500">
+              {form.salaryRange
+                ? `Salary listed as "${form.salaryRange}". Click Research Salary for a detailed breakdown or market comparison.`
+                : "No salary listed — click Research Salary to estimate based on official scales or market rates."}
+            </p>
+          </div>
+        )}
+
+        {salaryLoading && (
+          <div className="border border-dashed border-zinc-800 rounded-lg p-5 text-center">
+            <Loader2 size={20} className="text-emerald-400 animate-spin mx-auto mb-2" />
+            <p className="text-sm text-zinc-500">Researching compensation…</p>
+          </div>
+        )}
+
+        {salaryData && !salaryLoading && (
+          <div className="border border-emerald-900/40 rounded-lg p-4 space-y-4">
+            {/* Estimate headline */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xl font-semibold text-emerald-300">{salaryData.estimate}</p>
+                <p className="text-xs text-zinc-400 mt-0.5">{salaryData.basis}</p>
+              </div>
+              {salaryData.scaleReference && (
+                <span className="text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded-md shrink-0">
+                  {salaryData.scaleReference}
+                </span>
+              )}
+            </div>
+
+            {/* Breakdown */}
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">How this was calculated</p>
+              <ul className="space-y-1.5">
+                {salaryData.breakdown.map((step, i) => (
+                  <li key={i} className="flex gap-2.5 text-sm text-zinc-300">
+                    <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    {step}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Notes */}
+            {salaryData.notes && (
+              <div className="bg-zinc-900 rounded-md px-3 py-2.5">
+                <p className="text-xs text-zinc-400"><span className="font-semibold text-zinc-300">Note: </span>{salaryData.notes}</p>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Company Research */}

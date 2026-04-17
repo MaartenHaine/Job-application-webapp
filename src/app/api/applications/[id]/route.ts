@@ -40,6 +40,7 @@ export async function PATCH(
         ...(body.interviewNotes !== undefined && { interviewNotes: body.interviewNotes || null }),
         ...(body.vibeCheck !== undefined && { vibeCheck: body.vibeCheck || null }),
         ...(body.companyResearch !== undefined && { companyResearch: body.companyResearch || null }),
+        ...(body.salaryResearch !== undefined && { salaryResearch: body.salaryResearch || null }),
         ...(body.whatTheyExpect !== undefined && {
           whatTheyExpect: Array.isArray(body.whatTheyExpect)
             ? JSON.stringify(body.whatTheyExpect)

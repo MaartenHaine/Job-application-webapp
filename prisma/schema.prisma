@@ -38,4 +38,5 @@ model JobApplication {
   interviewNotes   String?
   vibeCheck        String?
   companyResearch  String? // JSON: { questions, insights, talkingPoints }
+  salaryResearch   String? // JSON: { estimate, basis, breakdown, notes }
 }
