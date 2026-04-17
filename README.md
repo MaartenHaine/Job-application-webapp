@@ -6,8 +6,10 @@ A local, self-hosted web app to track job applications. Built with Next.js, Pris
 
 - Kanban dashboard grouped by application status
 - Magic Import — paste a job description and AI fills in the form
-- Job detail and edit view
-- AI-powered interview preparation (questions to ask, company insights, expected questions)
+- Job detail and edit view with inline editing
+- Job type support: Internship, Student Job, Part-time, Full-time
+- AI-powered interview preparation (questions to ask, company insights, talking points, expected questions)
+- AI salary research with Belgian/EU pay scale knowledge and pay transparency awareness
 
 ## Setup
 
@@ -44,14 +46,30 @@ Click **+ Add Application** in the top right. You have two options:
 1. Find the job posting and copy all the text (title, company, requirements, salary, everything).
 2. Paste it into the Magic Import text area at the top of the form.
 3. Click **Parse with AI** — the form will auto-fill with the extracted data.
-4. Review the fields, adjust anything that looks off, set the **Job Type** and **Status**, then click **Save Application**.
+4. Review the fields, adjust anything that looks off, set the **Job Type**, **Location**, and **Status**, then click **Save Application**.
 
 **Manual entry**
 Fill in the form fields directly without using the parser.
 
 ### Job detail & editing
 
-Click any application card to open the detail view. By default everything is read-only. Click **Edit** in the top right to edit all fields inline. Click **Save** when done. The **Interview Scratchpad** at the bottom is always editable and auto-saves when you click away — use it for raw notes during or after interviews.
+Click any application card to open the detail view. By default everything is read-only. Click **Edit** in the top right to edit all fields inline, including the **Location** field (e.g. "Leuven, Belgium"). Click **Save** when done.
+
+The **Interview Scratchpad** at the bottom is always editable and auto-saves when you click away — use it for raw notes during or after interviews.
+
+### Salary research
+
+On any application's detail page, scroll to the **Salary Research** section. A yellow "No salary listed" badge appears when the posting didn't mention compensation. Click **Research Salary** and the AI will provide:
+
+- **Gross estimate** — salary range based on official scales or market rates
+- **Net take-home** — approximate monthly net using Belgian tax rules
+- **How it was calculated** — step-by-step reasoning
+- **Scale reference** — the specific barema or joint committee scale if applicable (e.g. *Barema A1 – Vlaamse overheid*, *PC 200*)
+- **Location adjustment** — cost-of-living or regional differences (Brussels premium, remote work impact, etc.)
+- **Benefits to factor in** — meal vouchers, eco cheques, 13th month, double holiday pay, group insurance, company car
+- **Pay Transparency note** — how the EU Pay Transparency Directive (required by June 2026) applies to this role and sector
+
+The AI has specific knowledge of Belgian government barema's, Flemish university and hogeschool scales, non-profit sector scales (Sociale Maribel, various PC's), and private sector market rates. Adding a precise **Location** (city + country) improves the estimate.
 
 ### Interview preparation
 
@@ -66,9 +84,10 @@ On any application's detail page, scroll to the **Interview Preparation** sectio
    - **Company Insights** — things worth knowing about the company or industry
    - **Talking Points** — ways to show genuine interest and preparation in conversation
    - **Questions You May Be Asked** — likely interview questions with coaching tips on how to answer them (click each question to expand the tip)
-3. Click **Regenerate** any time to get a fresh set, for example with a different focus.
+3. The output is adapted to the **Job Type** — internship prep looks different from full-time prep.
+4. Click **Regenerate** any time to get a fresh set, for example with a different focus.
 
-The results are saved automatically and will be there next time you open the application.
+Results are saved automatically and will be there next time you open the application.
 
 ### Statuses
 
@@ -81,3 +100,12 @@ The results are saved automatically and will be there next time you open the app
 | Final Interview | Last round |
 | Offer | Offer received |
 | Rejected | No longer in consideration |
+
+### Job types
+
+| Type | Notes |
+|---|---|
+| Internship | Prep focuses on learning, mentorship, and day-to-day tasks |
+| Student Job | Practical fit, scheduling, short-term goals |
+| Part-time | Scope, hours, team integration |
+| Full-time | Full career trajectory, growth, team structure |
