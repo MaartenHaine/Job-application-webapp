@@ -1,0 +1,41 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model JobApplication {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company info
+  companyName    String
+  companyWebsite String?
+  industry       String?
+
+  // Job info
+  jobTitle     String
+  jobUrl       String?
+  locationType String @default("Remote") // Remote | Hybrid | On-site
+  jobType      String @default("Full-time") // Internship | Student Job | Part-time | Full-time
+
+  // Status
+  status String @default("Draft") // Draft | Applied | Recruiter Screen | Technical | Final Interview | Offer | Rejected
+
+  // Compensation
+  salaryRange String?
+
+  // Expectations (stored as JSON strings)
+  whatTheyExpect String? // JSON array of strings
+  whatIExpect    String? // JSON array of strings
+
+  // Notes & reflection
+  whyIApplied      String?
+  interviewNotes   String?
+  vibeCheck        String?
+  companyResearch  String? // JSON: { questions, insights, talkingPoints }
+}
