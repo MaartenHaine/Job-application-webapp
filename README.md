@@ -89,6 +89,28 @@ On any application's detail page, scroll to the **Interview Preparation** sectio
 
 Results are saved automatically and will be there next time you open the application.
 
+### Profile
+
+Click **Profile** in the nav bar to set up your personal profile. This is used to personalise salary estimates and interview preparation across all applications.
+
+**CV Import (recommended)**
+1. Copy your full CV text (from a PDF, Word doc, LinkedIn export, anything).
+2. Paste it into the Import from CV text area.
+3. Click **Parse CV** — the AI extracts your work experience, education, skills, and languages automatically.
+4. Review the fields and click **Save Profile**.
+
+**Manual entry**
+Fill in the sections directly:
+- Basic info: name, email, current title, location, summary
+- Work experience: title, company, dates, description (mark current roles with the checkbox)
+- Education: degree, field, institution, graduation year
+- Skills: type and press Enter to add tags
+- Languages: language + level (e.g. Native, B2, Fluent)
+
+**How the profile is used**
+- **Salary research** — your work history is used to calculate total years of experience and place you in the right seniority bracket, making estimates more accurate
+- **Interview prep** — your current title, summary, and skills are passed to the AI so talking points and expected questions are tailored to your actual background
+
 ### Statuses
 
 | Status | Meaning |
