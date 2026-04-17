@@ -12,6 +12,7 @@ interface FormState {
   jobTitle: string;
   jobUrl: string;
   locationType: string;
+  location: string;
   jobType: string;
   status: string;
   salaryRange: string;
@@ -29,6 +30,7 @@ const empty: FormState = {
   jobTitle: "",
   jobUrl: "",
   locationType: "Remote",
+  location: "",
   jobType: "Full-time",
   status: "Draft",
   salaryRange: "",
@@ -148,6 +150,7 @@ export default function NewApplicationForm() {
         jobTitle: parsed.jobTitle ?? "",
         jobUrl: parsed.jobUrl ?? "",
         locationType: parsed.locationType ?? "Remote",
+        location: "",
         jobType: "Full-time",
         status: "Draft",
         salaryRange: parsed.salaryRange ?? "",
@@ -302,6 +305,14 @@ export default function NewApplicationForm() {
               onChange={(e) => set("jobUrl", e.target.value)}
               placeholder="https://jobs.example.com/posting/123"
               type="url"
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Location (City, Country)">
+            <input
+              value={form.location}
+              onChange={(e) => set("location", e.target.value)}
+              placeholder="e.g. Leuven, Belgium"
               className={inputCls}
             />
           </Field>

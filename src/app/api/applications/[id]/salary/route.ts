@@ -11,6 +11,7 @@ export async function POST(
   if (!app) return Response.json({ error: "Not found" }, { status: 404 });
 
   const jobType = (app as Record<string, unknown>).jobType as string ?? "Full-time";
+  const location = (app as Record<string, unknown>).location as string | null;
 
   try {
     const res = await fetch(
@@ -26,34 +27,46 @@ export async function POST(
           messages: [
             {
               role: "system",
-              content: `You are a compensation research expert with deep knowledge of salary scales across sectors — including Belgian and European government barema's, university pay scales (Flemish universities, hogescholen, UC Leuven-Limburg, KU Leuven, UGent, etc.), non-profit scales, and private sector market rates.
+              content: `You are a compensation research expert specialising in Belgian and European labour markets. You have deep knowledge of:
 
-Given a job, estimate realistic compensation and explain exactly how you arrived at it. Return ONLY a valid JSON object — no markdown, no code fences.
+- Belgian government barema's (federal, Flemish, Walloon, local)
+- University and hogeschool pay scales (KU Leuven, UGent, VUB, UCLouvain, UC Leuven-Limburg, Arteveldehogeschool, etc.)
+- Joint committee scales (Paritair Comité / PC): PC 200, PC 218, PC 330, PC 319, etc.
+- Non-profit and social sector scales (Sociale Maribel, etc.)
+- Private sector market rates by industry and seniority
+- Regional cost-of-living differences within Belgium (Brussels premium, Ghent/Antwerp vs smaller cities)
+- Student job and internship legal minimums (Belgian student flexi-job rules, stage vergoeding)
+- Belgian salary components: gross vs net conversion (~65–70% rule of thumb), meal vouchers, eco cheques, 13th month, holiday pay (dubbel vakantiegeld), group insurance, hospitalization insurance, company car BIK
+- EU Pay Transparency Directive (2023/970): EU member states must implement by June 2026, requiring employers to disclose salary ranges in job postings and provide pay progression information. Belgium is transposing this into national law. This means salary data will become increasingly public — your estimates should align with what will eventually be disclosed.
 
-The JSON must have exactly these fields:
+Given a job, estimate realistic compensation with full reasoning. Return ONLY a valid JSON object — no markdown, no code fences.
+
 {
-  "estimate": "string — the estimated salary or range, e.g. '€2,400–€2,800/month gross' or '€35,000–€42,000/year gross'",
-  "basis": "string — one of: 'Official government scale', 'University/hogeschool scale', 'Non-profit CP scale', 'Market rate estimate', 'Internship/student rate'",
-  "breakdown": ["array of strings explaining the reasoning step by step"],
-  "scaleReference": "string or null — name of the specific scale or barema if applicable, e.g. 'Flemish government: salary scale A1' or 'PC 330 non-profit'",
-  "notes": "string or null — important caveats, e.g. seniority impact, year-end premiums, benefits that offset lower base, student/intern limitations"
-}
-
-Be specific. If you know the actual scale, cite it. For Belgian government or education roles always try to identify the correct barema. For internships, note the legal minimum or typical rates. For private companies, use industry and seniority signals.`,
+  "estimate": "string — gross salary range, e.g. '€2,400–€2,800/month gross' or '€35,000–€42,000/year gross'",
+  "netEstimate": "string or null — approximate net monthly take-home if calculable, noting assumptions",
+  "basis": "string — one of: 'Official government scale', 'University/hogeschool scale', 'Joint committee scale', 'Non-profit sector scale', 'Market rate estimate', 'Internship/student rate'",
+  "breakdown": ["array of strings — step-by-step reasoning"],
+  "scaleReference": "string or null — specific scale name, e.g. 'Barema A1 – Vlaamse overheid' or 'PC 200 – bedienden'",
+  "locationAdjustment": "string or null — note any location-specific factors, e.g. Brussels expat premium, remote work impact on location-based pay",
+  "benefitsToFactor": ["array of common benefits for this type of role that offset the base salary"],
+  "payTransparencyNote": "string or null — any relevant note about upcoming Belgian/EU pay transparency rules and what they mean for this role",
+  "notes": "string or null — caveats: seniority, experience level, negotiation room, etc."
+}`,
             },
             {
               role: "user",
-              content: `Research the expected compensation for this role:
+              content: `Research compensation for this role:
 
 Company: ${app.companyName}
 Industry: ${app.industry ?? "unknown"}
 Job title: ${app.jobTitle}
 Job type: ${jobType}
-Location type: ${app.locationType}
+Work arrangement: ${app.locationType}
+${location ? `Location: ${location}` : "Location: not specified"}
 ${app.salaryRange ? `Salary mentioned in posting: ${app.salaryRange}` : "No salary was mentioned in the job posting."}
 ${app.whyIApplied ? `Additional context: ${app.whyIApplied}` : ""}
 
-Provide a detailed salary estimate with reasoning.`,
+Provide a detailed salary estimate with full reasoning, location adjustments, and benefit context.`,
             },
           ],
         }),

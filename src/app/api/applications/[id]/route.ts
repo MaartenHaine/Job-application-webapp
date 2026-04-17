@@ -33,6 +33,7 @@ export async function PATCH(
         ...(body.jobTitle !== undefined && { jobTitle: body.jobTitle }),
         ...(body.jobUrl !== undefined && { jobUrl: body.jobUrl || null }),
         ...(body.locationType !== undefined && { locationType: body.locationType }),
+        ...(body.location !== undefined && { location: body.location || null }),
         ...(body.jobType !== undefined && { jobType: body.jobType }),
         ...(body.status !== undefined && { status: body.status }),
         ...(body.salaryRange !== undefined && { salaryRange: body.salaryRange || null }),

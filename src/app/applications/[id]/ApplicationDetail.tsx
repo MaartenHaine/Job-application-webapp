@@ -30,6 +30,7 @@ type App = {
   jobTitle: string;
   jobUrl: string | null;
   locationType: string;
+  location: string | null;
   jobType: string;
   status: string;
   salaryRange: string | null;
@@ -53,9 +54,13 @@ type ResearchData = {
 
 type SalaryResearch = {
   estimate: string;
+  netEstimate: string | null;
   basis: string;
   breakdown: string[];
   scaleReference: string | null;
+  locationAdjustment: string | null;
+  benefitsToFactor: string[];
+  payTransparencyNote: string | null;
   notes: string | null;
 };
 
@@ -222,6 +227,7 @@ export default function ApplicationDetail({ app }: { app: App }) {
     jobTitle: app.jobTitle,
     jobUrl: app.jobUrl ?? "",
     locationType: app.locationType,
+    location: app.location ?? "",
     jobType: app.jobType ?? "Full-time",
     status: app.status,
     salaryRange: app.salaryRange ?? "",
@@ -383,7 +389,7 @@ export default function ApplicationDetail({ app }: { app: App }) {
               </select>
             ) : <p className="text-sm text-zinc-200">{form.status}</p>}
           </Field>
-          <Field label="Location">
+          <Field label="Work Arrangement">
             {editing ? (
               <select value={form.locationType} onChange={(e) => set("locationType", e.target.value)} className={inputCls}>
                 {LOCATION_TYPES.map((t) => <option key={t}>{t}</option>)}
@@ -391,6 +397,11 @@ export default function ApplicationDetail({ app }: { app: App }) {
             ) : <p className="text-sm text-zinc-200">{form.locationType}</p>}
           </Field>
         </div>
+        <Field label="Location (City, Country)">
+          {editing ? (
+            <input value={form.location} onChange={(e) => set("location", e.target.value)} placeholder="e.g. Leuven, Belgium" className={inputCls} />
+          ) : <p className="text-sm text-zinc-200">{form.location || <span className="text-zinc-600">—</span>}</p>}
+        </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Company Website">
             {editing ? (
@@ -487,14 +498,17 @@ export default function ApplicationDetail({ app }: { app: App }) {
 
         {salaryData && !salaryLoading && (
           <div className="border border-emerald-900/40 rounded-lg p-4 space-y-4">
-            {/* Estimate headline */}
-            <div className="flex items-start justify-between gap-4">
+            {/* Headline */}
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <p className="text-xl font-semibold text-emerald-300">{salaryData.estimate}</p>
-                <p className="text-xs text-zinc-400 mt-0.5">{salaryData.basis}</p>
+                {salaryData.netEstimate && (
+                  <p className="text-sm text-zinc-400 mt-0.5">≈ {salaryData.netEstimate} net</p>
+                )}
+                <p className="text-xs text-zinc-500 mt-0.5">{salaryData.basis}</p>
               </div>
               {salaryData.scaleReference && (
-                <span className="text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded-md shrink-0">
+                <span className="text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded-md shrink-0 self-start">
                   {salaryData.scaleReference}
                 </span>
               )}
@@ -512,6 +526,32 @@ export default function ApplicationDetail({ app }: { app: App }) {
                 ))}
               </ul>
             </div>
+
+            {/* Location adjustment */}
+            {salaryData.locationAdjustment && (
+              <div className="bg-zinc-900 rounded-md px-3 py-2.5">
+                <p className="text-xs text-zinc-400"><span className="font-semibold text-zinc-300">Location: </span>{salaryData.locationAdjustment}</p>
+              </div>
+            )}
+
+            {/* Benefits */}
+            {salaryData.benefitsToFactor?.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Common benefits for this role</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {salaryData.benefitsToFactor.map((b, i) => (
+                    <span key={i} className="text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded-full">{b}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pay transparency note */}
+            {salaryData.payTransparencyNote && (
+              <div className="bg-blue-950/40 border border-blue-900/40 rounded-md px-3 py-2.5">
+                <p className="text-xs text-blue-300"><span className="font-semibold">Pay Transparency (EU 2026): </span>{salaryData.payTransparencyNote}</p>
+              </div>
+            )}
 
             {/* Notes */}
             {salaryData.notes && (

@@ -21,6 +21,7 @@ model JobApplication {
   jobTitle     String
   jobUrl       String?
   locationType String @default("Remote") // Remote | Hybrid | On-site
+  location     String? // City, Country — e.g. "Leuven, Belgium"
   jobType      String @default("Full-time") // Internship | Student Job | Part-time | Full-time
 
   // Status
