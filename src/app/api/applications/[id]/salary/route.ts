@@ -7,11 +7,46 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  const app = await prisma.jobApplication.findUnique({ where: { id } });
+  const [app, profile] = await Promise.all([
+    prisma.jobApplication.findUnique({ where: { id } }),
+    prisma.userProfile.findUnique({ where: { id: "profile" } }),
+  ]);
   if (!app) return Response.json({ error: "Not found" }, { status: 404 });
 
   const jobType = (app as Record<string, unknown>).jobType as string ?? "Full-time";
   const location = (app as Record<string, unknown>).location as string | null;
+
+  // Build profile context for the prompt
+  let profileContext = "";
+  if (profile) {
+    const workExp: Array<{ title: string; company: string; from: string; to: string | null; current: boolean }> = profile.workExperience
+      ? (() => { try { return JSON.parse(profile.workExperience); } catch { return []; } })()
+      : [];
+    const edu: Array<{ degree: string; field: string; institution: string; year: string | null }> = profile.education
+      ? (() => { try { return JSON.parse(profile.education); } catch { return []; } })()
+      : [];
+    const skills: string[] = profile.skills
+      ? (() => { try { return JSON.parse(profile.skills); } catch { return []; } })()
+      : [];
+
+    const expYears = workExp.length > 0
+      ? workExp.map(w => {
+          const start = parseInt(w.from?.match(/\d{4}/)?.[0] ?? "0");
+          const end = w.current ? new Date().getFullYear() : parseInt(w.to?.match(/\d{4}/)?.[0] ?? "0");
+          return isNaN(start) || isNaN(end) ? 0 : end - start;
+        }).reduce((a, b) => a + b, 0)
+      : null;
+
+    profileContext = `
+Candidate profile:
+${profile.name ? `Name: ${profile.name}` : ""}
+${profile.currentTitle ? `Current title: ${profile.currentTitle}` : ""}
+${expYears !== null ? `Total experience: ~${expYears} years` : ""}
+${workExp.length > 0 ? `Recent experience: ${workExp.slice(0, 3).map(w => `${w.title} at ${w.company}`).join(", ")}` : ""}
+${edu.length > 0 ? `Education: ${edu.map(e => `${e.degree} in ${e.field} (${e.institution})`).join(", ")}` : ""}
+${skills.length > 0 ? `Skills: ${skills.slice(0, 15).join(", ")}` : ""}
+${profile.location ? `Candidate location: ${profile.location}` : ""}`.trim();
+  }
 
   try {
     const res = await fetch(
@@ -65,6 +100,7 @@ Work arrangement: ${app.locationType}
 ${location ? `Location: ${location}` : "Location: not specified"}
 ${app.salaryRange ? `Salary mentioned in posting: ${app.salaryRange}` : "No salary was mentioned in the job posting."}
 ${app.whyIApplied ? `Additional context: ${app.whyIApplied}` : ""}
+${profileContext ? `\n${profileContext}\n\nUse the candidate's experience and education level to adjust the salary estimate to the appropriate seniority bracket.` : ""}
 
 Provide a detailed salary estimate with full reasoning, location adjustments, and benefit context.`,
             },

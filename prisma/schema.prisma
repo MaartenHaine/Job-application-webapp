@@ -7,6 +7,21 @@ datasource db {
   provider = "sqlite"
 }
 
+// Single-record user profile (id is always "profile")
+model UserProfile {
+  id              String   @id @default("profile")
+  updatedAt       DateTime @updatedAt
+  name            String?
+  email           String?
+  currentTitle    String?
+  location        String?
+  summary         String?
+  workExperience  String?  // JSON: [{ title, company, from, to, current, description }]
+  education       String?  // JSON: [{ degree, field, institution, year }]
+  skills          String?  // JSON: string[]
+  languages       String?  // JSON: [{ language, level }]
+}
+
 model JobApplication {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())

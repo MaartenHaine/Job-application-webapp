@@ -30,12 +30,17 @@ export default function RootLayout({
           <Link href="/" className="font-semibold text-zinc-100 hover:text-white tracking-tight">
             Job Tracker
           </Link>
-          <Link
-            href="/new"
-            className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-md transition-colors"
-          >
-            + Add Application
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/profile" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">
+              Profile
+            </Link>
+            <Link
+              href="/new"
+              className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-md transition-colors"
+            >
+              + Add Application
+            </Link>
+          </div>
         </header>
         <main className="flex-1 overflow-auto">
           {children}

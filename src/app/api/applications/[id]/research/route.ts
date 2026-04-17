@@ -20,8 +20,19 @@ export async function POST(
   const body = await request.json().catch(() => ({}));
   const focus: string = body.focus ?? "";
 
-  const app = await prisma.jobApplication.findUnique({ where: { id } });
+  const [app, profile] = await Promise.all([
+    prisma.jobApplication.findUnique({ where: { id } }),
+    prisma.userProfile.findUnique({ where: { id: "profile" } }),
+  ]);
   if (!app) return Response.json({ error: "Not found" }, { status: 404 });
+
+  const profileSummary = profile
+    ? [
+        profile.currentTitle && `Current title: ${profile.currentTitle}`,
+        profile.summary && `Background: ${profile.summary}`,
+        profile.skills && (() => { try { const s = JSON.parse(profile.skills!); return `Skills: ${s.slice(0, 10).join(", ")}`; } catch { return null; } })(),
+      ].filter(Boolean).join("\n")
+    : "";
 
   const whatTheyExpect = parseJsonArray(app.whatTheyExpect);
   const jobType = (app as Record<string, unknown>).jobType as string ?? "Full-time";
@@ -65,7 +76,7 @@ All string values must be clean — no markdown, no bullet prefixes.`,
             },
             {
               role: "user",
-              content: `Company: ${app.companyName}
+              content: `${profileSummary ? `About the candidate:\n${profileSummary}\n\n` : ""}Company: ${app.companyName}
 Industry: ${app.industry ?? "unknown"}
 Role: ${app.jobTitle}
 Job type: ${jobType}
